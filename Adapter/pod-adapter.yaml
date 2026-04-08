@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adapter-health
+spec:
+  containers:
+    - name: mysql
+      image: mysql:5.7
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "password"
+    - name: adapter
+      image: mi-adapter-local:v1 
+      imagePullPolicy: Never 
+      ports:
+        - containerPort: 8080
