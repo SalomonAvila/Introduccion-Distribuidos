@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-index-conf
+data:
+  index.html: |
+    <html>
+    <head><title>Hola Mundo</title></head>
+    <body><h1>Mensaje personalizado modificado por ConfigMap</h1></body>
+    </html>

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-exp
+  labels:
+    app: experiment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: experiment
+  template:
+    metadata:
+      labels:
+        app: experiment
+    spec:
+      containers:
+      - name: experiment
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: html-volume
+            mountPath: /usr/share/nginx/html/index.html # Sobrescribe el archivo por defecto
+            subPath: index.html
+      volumes:
+        - name: html-volume
+          configMap:
+            name: nginx-index-conf  
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: experiment
+  labels:
+    app: experiment
+spec:
+  type: ClusterIP
+  selector:
+    app: experiment
+  ports:
+    - port: 80
+      

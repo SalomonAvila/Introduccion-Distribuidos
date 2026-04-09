@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: experiment-example
+  labels:
+    app: expweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expweb
+  template:
+    metadata:
+      labels:
+        app: expweb
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    app: expweb
+spec:
+  type: NodePort
+  selector:
+    app: expweb
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80  
