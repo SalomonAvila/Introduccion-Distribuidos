@@ -1,0 +1,19 @@
+# subscriptor.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zmq-subscriptor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zmq-sub
+  template:
+    metadata:
+      labels:
+        app: zmq-sub
+    spec:
+      containers:
+      - name: subscriptor
+        image: suscriptor1:latest
+        imagePullPolicy: Never

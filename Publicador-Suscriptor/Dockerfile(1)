@@ -1,0 +1,13 @@
+FROM ubuntu:14.04
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y install gcc
+RUN apt-get -y install nano
+RUN apt-get -y install libzmq3-dev
+COPY ./zhelpers.h /home/
+COPY ./psenvsub.c /home/
+WORKDIR /home/
+RUN gcc -o psenvsub psenvsub.c -lzmq
+CMD ["./psenvsub"]
+
+

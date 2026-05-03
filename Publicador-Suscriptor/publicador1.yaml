@@ -1,0 +1,33 @@
+# publicador.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher-service  # Este será el "hostname" para el subscriptor
+spec:
+  selector:
+    app: zmq-pub     # Conecta con pods que tengan esta etiqueta
+  ports:
+    - protocol: TCP
+      port: 5563     # Puerto del servicio
+      targetPort: 5563
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zmq-publicador
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zmq-pub
+  template:
+    metadata:
+      labels:
+        app: zmq-pub
+    spec:
+      containers:
+      - name: publicador
+        image: publicador1:latest
+        imagePullPolicy: Never # Como vimos antes, para usar tu imagen local
+        ports:
+        - containerPort: 5563
