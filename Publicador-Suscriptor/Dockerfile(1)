@@ -10,4 +10,3 @@ WORKDIR /home/
 RUN gcc -o psenvsub psenvsub.c -lzmq
 CMD ["./psenvsub"]
 
-
