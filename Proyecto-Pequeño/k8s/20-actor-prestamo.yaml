@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actor-prestamo
+  namespace: biblioteca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: actor-prestamo
+  template:
+    metadata:
+      labels:
+        app: actor-prestamo
+    spec:
+      containers:
+      - name: actor-prestamo
+        image: biblioteca/actor-prestamo:latest
+        imagePullPolicy: Never
+        env:
+        - name: ACTOR_PRESTAMO_BIND
+          value: tcp://*:5557
+        ports:
+        - containerPort: 5557
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: actor-prestamo
+  namespace: biblioteca
+spec:
+  selector:
+    app: actor-prestamo
+  ports:
+  - name: prestamo-reqrep
+    protocol: TCP
+    port: 5557
+    targetPort: 5557

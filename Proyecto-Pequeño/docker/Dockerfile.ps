@@ -1,0 +1,17 @@
+FROM alpine:3.20 AS build
+RUN apk add --no-cache \
+    build-base \
+    cmake \
+    pkgconfig \
+    zeromq-dev \
+    cppzmq
+WORKDIR /app
+COPY . .
+RUN cmake -S . -B build && cmake --build build -j
+
+FROM alpine:3.20
+RUN apk add --no-cache libzmq
+WORKDIR /app
+COPY --from=build /app/build/requester_ps /app/requester_ps
+COPY --from=build /app/data/requests_ps1.txt /app/data/requests_ps1.txt
+CMD ["/app/requester_ps", "/app/data/requests_ps1.txt"]

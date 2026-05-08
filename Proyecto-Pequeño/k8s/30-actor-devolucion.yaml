@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actor-devolucion
+  namespace: biblioteca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: actor-devolucion
+  template:
+    metadata:
+      labels:
+        app: actor-devolucion
+    spec:
+      containers:
+      - name: actor-devolucion
+        image: biblioteca/actor-devolucion:latest
+        imagePullPolicy: Never
+        env:
+        - name: GC_PUB_ENDPOINT
+          value: tcp://load-manager:5556

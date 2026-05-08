@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actor-renovacion
+  namespace: biblioteca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: actor-renovacion
+  template:
+    metadata:
+      labels:
+        app: actor-renovacion
+    spec:
+      containers:
+      - name: actor-renovacion
+        image: biblioteca/actor-renovacion:latest
+        imagePullPolicy: Never
+        env:
+        - name: GC_PUB_ENDPOINT
+          value: tcp://load-manager:5556

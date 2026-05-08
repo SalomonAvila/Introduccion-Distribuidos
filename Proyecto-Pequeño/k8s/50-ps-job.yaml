@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: requester-ps
+  namespace: biblioteca
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: requester-ps
+        image: biblioteca/requester-ps:latest
+        imagePullPolicy: Never
+        env:
+        - name: GC_ENDPOINT
+          value: tcp://load-manager:5555
+        volumeMounts:
+        - name: reqs
+          mountPath: /app/data
+      volumes:
+      - name: reqs
+        configMap:
+          name: ps-requests
+  backoffLimit: 0
