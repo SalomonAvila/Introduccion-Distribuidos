@@ -10,6 +10,6 @@ COPY ./psenvpub.c /home/
 WORKDIR /home/
 EXPOSE 5563
 RUN gcc -o psenvpub psenvpub.c -lzmq
-CMD ["./psenvpub"]
+CMD ["bash", "-c", "while true; do ./psenvpub; sleep 1; done"]
 
 
