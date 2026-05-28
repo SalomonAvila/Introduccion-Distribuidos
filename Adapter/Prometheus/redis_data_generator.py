@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""
+Script para generar datos constantemente en Redis
+Útil para visualizar métricas en Prometheus
+"""
+
+import redis
+import time
+import random
+import string
+from datetime import datetime
+
+# Configuración
+REDIS_HOST = 'localhost'  # Cambia a la IP de minikube si es necesario
+REDIS_PORT = 6379
+REDIS_DB = 0
+
+def random_string(length=10):
+    """Genera una cadena aleatoria"""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def random_data():
+    """Genera datos aleatorios"""
+    return {
+        'timestamp': datetime.now().isoformat(),
+        'value': random.randint(1, 1000),
+        'user': f"user_{random.randint(1, 100)}",
+        'event': random.choice(['login', 'logout', 'purchase', 'view', 'click'])
+    }
+
+def main():
+    try:
+        # Conecta a Redis
+        r = redis.Redis(
+            host=REDIS_HOST,
+            port=REDIS_PORT,
+            db=REDIS_DB,
+            decode_responses=True
+        )
+        
+        # Verifica conexión
+        r.ping()
+        print(f"✓ Conectado a Redis en {REDIS_HOST}:{REDIS_PORT}")
+        
+        counter = 0
+        
+        while True:
+            try:
+                counter += 1
+                
+                # 1. SET/GET operations
+                key = f"data:{counter}"
+                data = random_data()
+                r.set(key, str(data), ex=3600)  # Expira en 1 hora
+                
+                # 2. INCR operations (para ver métricas)
+                r.incr('total_operations')
+                r.incr(f"operations_by_type:{data['event']}")
+                
+                # 3. LPUSH/LPOP (listas)
+                r.lpush('event_queue', f"{counter}:{data['event']}")
+                if r.llen('event_queue') > 1000:
+                    r.rpop('event_queue')
+                
+                # 4. HSET (hashes)
+                r.hset(f"user:{data['user']}", 
+                       mapping={
+                           'last_event': data['event'],
+                           'event_count': r.hget(f"user:{data['user']}", 'event_count') or 0,
+                           'timestamp': data['timestamp']
+                       })
+                
+                # 5. SADD (sets)
+                r.sadd('active_users', data['user'])
+                r.sadd(f"events_today", data['event'])
+                
+                # 6. GET operation
+                r.get(f"data:{random.randint(max(1, counter-100), counter)}")
+                
+                # 7. DEL operation (ocasional)
+                if counter % 50 == 0:
+                    old_key = f"data:{counter-100}"
+                    r.delete(old_key)
+                
+                if counter % 10 == 0:
+                    info = r.info()
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] "
+                          f"Ops: {counter} | "
+                          f"Keys: {info['db0']['keys']} | "
+                          f"Memory: {info['used_memory_human']} | "
+                          f"Clients: {info['connected_clients']}")
+                
+                # Pausa pequeña para no saturar
+                time.sleep(0.1)
+                
+            except redis.ConnectionError:
+                print("✗ Error de conexión a Redis. Reintentando...")
+                time.sleep(5)
+            except Exception as e:
+                print(f"✗ Error: {e}")
+                time.sleep(1)
+    
+    except redis.ConnectionError:
+        print(f"✗ No se pudo conectar a Redis en {REDIS_HOST}:{REDIS_PORT}")
+        print("Asegúrate de que Redis está corriendo y es accesible")
+        exit(1)
+
+if __name__ == '__main__':
+    print("🚀 Iniciando generador de datos para Redis")
+    print("Press Ctrl+C para detener")
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n✓ Detenido")

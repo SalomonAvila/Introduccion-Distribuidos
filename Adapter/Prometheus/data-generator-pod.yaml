@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-data-generator
+  namespace: default
+  labels:
+    app: data-generator
+spec:
+  containers:
+  - name: generator
+    image: python:3.11-slim
+    command:
+      - sh
+      - -c
+      - |
+        pip install redis -q && python3 /scripts/redis_data_generator.py
+    volumeMounts:
+      - name: script-volume
+        mountPath: /scripts
+        readOnly: true
+  volumes:
+    - name: script-volume
+      configMap:
+        name: redis-data-generator-script
+  restartPolicy: Always

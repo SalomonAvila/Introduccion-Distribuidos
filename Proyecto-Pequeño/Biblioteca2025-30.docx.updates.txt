@@ -1,0 +1,40 @@
+Notas de despliegue en Minikube
+
+- Nombre de la carpeta: en las instrucciones se menciona `Proyecto-Pequeno` en algunos comandos.
+  La ruta correcta en este repositorio es `Proyecto-Pequeño`. Para evitar problemas use comillas si su shell lo requiere:
+
+    cd "Proyecto-Pequeño"
+
+- Imágenes para Minikube: los manifiestos usan `imagePullPolicy: Never`. Esto significa que el
+  clúster esperará que la imagen ya exista localmente. Tiene dos opciones válidas:
+
+  Opción A (construir dentro del daemon Docker de Minikube):
+
+    eval $(minikube docker-env)
+    docker build -t biblioteca/load-manager:latest -f docker/Dockerfile.gc .
+
+  Opción B (construir local y luego cargar la imagen en Minikube):
+
+    docker build -t biblioteca/load-manager:latest -f docker/Dockerfile.gc .
+    minikube image load biblioteca/load-manager:latest
+
+  Añada esta nota para cada imagen que construya (actor-prestamo, actor-devolucion, actor-renovacion,
+  requester-ps, load-manager). Si prefiere no usar `imagePullPolicy: Never`, cambie a `IfNotPresent`
+  o publique las imágenes en un registro accesible por el cluster.
+
+- Orden de aplicación de manifiestos: puede simplificar aplicando todo el directorio `k8s/`, que
+  respeta los prefijos numéricos (00-, 10-, 20-...). En lugar de aplicar archivos individualmente,
+  use:
+
+    kubectl apply -f k8s/
+
+  Si mantiene la lista manual, asegúrese de aplicar en orden ascendente por prefijo (00 antes que 10, etc.).
+
+- Comprobaciones rápidas recomendadas después del despliegue:
+
+    kubectl get pods -n biblioteca
+    kubectl logs -n biblioteca deploy/load-manager
+    kubectl logs -n biblioteca job/requester-ps
+
+
+-- Fin de las notas --

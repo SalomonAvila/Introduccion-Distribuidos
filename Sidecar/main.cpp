@@ -1,3 +1,6 @@
+#include <iostream>
+#include <unistd.h>
+
 void tarea_hijo(int id) {  
 	while (true) {  
     	std::cout << "Hijo " << id << " corriendo (PID: " << getpid() << ")\\n";  
